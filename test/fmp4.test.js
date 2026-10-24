@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { flatten, initTrack, initTracks, interleave, mergeInit, prepareFragment, trackDefaults } from "../fmp4.js";
+import { flatten, fragmentedInit, initTrack, initTracks, interleave, mergeInit, prepareFragment, trackDefaults } from "../fmp4.js";
 
 // Fixtures come from scripts/make-fixtures.sh: 2 s of 64x64 H.264 at
 // 10 fps and 2 s of 48 kHz AAC, each as a separate fMP4 track.
@@ -67,6 +67,13 @@ test("prepareFragment keeps moof/mdat, rewrites the track ID, and reads decode t
   assert.equal(first.time, 0);
   assert.ok(second.time > 0);
   assert.ok(first.trafs.every((t) => t.id === 7));
+});
+
+test("fragmentedInit takes ftyp + moov from a single-file fMP4", () => {
+  const init = fixture("video-init.mp4");
+  const whole = new Uint8Array(Buffer.concat([init, ...segments("video").map(fixture)]));
+  assert.deepEqual(fragmentedInit(whole), init);
+  assert.equal(fragmentedInit(fixture("video-0.m4s")), null);
 });
 
 test("prepareFragment rejects a progressive MP4", () => {

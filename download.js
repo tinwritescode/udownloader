@@ -1,5 +1,5 @@
 import { parseMpd } from "./dash.js";
-import { flatten, initTrack, initTracks, interleave, mergeInit, prepareFragment, trackDefaults } from "./fmp4.js";
+import { flatten, fragmentedInit, initTrack, initTracks, interleave, mergeInit, prepareFragment, trackDefaults } from "./fmp4.js";
 import { isMaster, parseMaster, parseMedia, segmentIv } from "./hls.js";
 import { toMp4 } from "./mux.js";
 import { extensionOf, isWebUrl, safeFileName, send } from "./shared.js";
@@ -122,6 +122,8 @@ async function fetchTrack({ init: initUrl, segments }, label, { transmux = false
   const add = (u8) => {
     if (mode !== "raw") {
       try {
+        // A single-file fMP4 carries its own init segment.
+        init ??= fragmentedInit(u8);
         defaults ??= init ? trackDefaults(init) : new Map();
         const { parts, time, trafs } = prepareFragment(u8, trackId, defaults);
         fragments.push({ blob: new Blob(parts), time, trafs });

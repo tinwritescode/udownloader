@@ -124,6 +124,19 @@ export function mergeInit(video, audio) {
   return ftyp ? [slice(init, ftyp), moov] : [moov];
 }
 
+// The ftyp + moov of a single-file fragmented MP4 (DASH SegmentBase or bare
+// BaseURL), which then has no separate init segment. Null when the data has
+// no moov, or a moov without mvex (a progressive MP4, kept as it is).
+export function fragmentedInit(u8) {
+  const moov = find(u8, ["moov"]);
+  if (!moov || !find(u8, ["mvex"], moov.body, moov.end)) return null;
+  const ftyp = find(u8, ["ftyp"]);
+  const parts = (ftyp ? [ftyp, moov] : [moov]).map((b) => slice(u8, b));
+  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
+  parts.reduce((o, p) => (out.set(p, o), o + p.length), 0);
+  return out;
+}
+
 const u24 = (u8, o) => (u8[o] << 16) | (u8[o + 1] << 8) | u8[o + 2];
 
 // trex defaults per track ID, used when tfhd/trun leave fields out.
