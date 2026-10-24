@@ -1,0 +1,46 @@
+name: Download problem
+description: A video was not detected, or failed to download or play.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the README's "Not supported" list first: DRM, live streams, and `blob:`/MSE-only players can't be downloaded.
+  - type: input
+    id: page
+    attributes:
+      label: Page URL
+      description: A public page where it happens. Leave out private or signed-in pages if you can't share them.
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What the popup showed
+      options:
+        - Nothing was detected
+        - HLS stream
+        - DASH stream
+        - Video file
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: The message on the download page, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      description: Right-click the download page, choose Inspect, then copy errors from the Console tab.
+      render: text
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      placeholder: uDownloader 0.1.0, Chrome 130, macOS 15
+    validations:
+      required: true
