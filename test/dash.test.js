@@ -66,6 +66,13 @@ test("SegmentList and nested BaseURL", () => {
   );
 });
 
+test("rejects byte-range SegmentLists (ffmpeg -single_file)", () => {
+  const body = `<Period><AdaptationSet mimeType="video/mp4"><Representation id="v" bandwidth="1"><BaseURL>video.mp4</BaseURL>
+    <SegmentList><Initialization range="0-814"/><SegmentURL mediaRange="815-510039"/></SegmentList>
+  </Representation></AdaptationSet></Period>`;
+  assert.throws(() => parseMpd(mpd(body), URL_), /Byte-range DASH segments are not supported/);
+});
+
 test("a bare BaseURL is one single-file track", () => {
   const tracks = parseMpd(
     mpd(

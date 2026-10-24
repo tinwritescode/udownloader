@@ -18,7 +18,7 @@ Separate audio and video tracks are merged at the MP4 box level (`fmp4.js`): one
 - DRM (Widevine, PlayReady, FairPlay, SAMPLE-AES). The extension does not try to get around copy protection.
 - Live streams. Dynamic DASH is refused, and a live HLS playlist only yields the segments listed at the moment it was loaded.
 - `blob:`/MSE players whose real requests never appear in network traffic.
-- HLS byte-range playlists (`#EXT-X-BYTERANGE`).
+- Byte-range segments: HLS `#EXT-X-BYTERANGE` playlists and DASH SegmentLists that use `mediaRange` (for example ffmpeg `-single_file` output).
 - HLS discontinuities (`#EXT-X-DISCONTINUITY`, often inserted ads) can break the TS-to-MP4 conversion.
 - DASH manifests with more than one Period: only the first Period is downloaded.
 - Firefox and Safari. Chromium browsers only (Chrome, Edge, Brave), version 102 or later.

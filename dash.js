@@ -73,6 +73,10 @@ function representation(set, rep, base, periodSeconds) {
   } else if (child(rep, "SegmentList") ?? child(set, "SegmentList")) {
     const list = child(rep, "SegmentList") ?? child(set, "SegmentList");
     const initEl = child(list, "Initialization");
+    // Without media/sourceURL, segments are byte ranges of the BaseURL file.
+    if ((initEl && !initEl.hasAttribute("sourceURL")) || children(list, "SegmentURL").some((s) => !s.hasAttribute("media"))) {
+      throw new Error("Byte-range DASH segments are not supported");
+    }
     init = initEl ? new URL(initEl.getAttribute("sourceURL"), repBase).href : null;
     segments = children(list, "SegmentURL").map((s) => new URL(s.getAttribute("media"), repBase).href);
   } else {
