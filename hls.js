@@ -8,7 +8,11 @@ function parseAttributes(text) {
   return attrs;
 }
 
-const lines = (text) => text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+const lines = (text) =>
+  text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
 
 export function isMaster(text) {
   return text.includes("#EXT-X-STREAM-INF");

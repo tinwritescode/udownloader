@@ -1,8 +1,8 @@
-import { send, safeFileName, extensionOf } from "./shared.js";
-import { isMaster, parseMaster, parseMedia, segmentIv } from "./hls.js";
 import { parseMpd } from "./dash.js";
+import { flatten, initTrack, initTracks, interleave, mergeInit, prepareFragment, trackDefaults } from "./fmp4.js";
+import { isMaster, parseMaster, parseMedia, segmentIv } from "./hls.js";
 import { toMp4 } from "./mux.js";
-import { initTrack, initTracks, mergeInit, interleave, prepareFragment, trackDefaults, flatten } from "./fmp4.js";
+import { extensionOf, safeFileName, send } from "./shared.js";
 
 const CONCURRENCY = 6;
 // ffmpeg.wasm holds input and output in a 32-bit heap (about 2-4 GB), so
@@ -53,7 +53,10 @@ async function fetchOk(url, as = "text") {
 const keyCache = new Map();
 function importKey(url) {
   if (!keyCache.has(url)) {
-    keyCache.set(url, fetchOk(url, "buffer").then((raw) => crypto.subtle.importKey("raw", raw, "AES-CBC", false, ["decrypt"])));
+    keyCache.set(
+      url,
+      fetchOk(url, "buffer").then((raw) => crypto.subtle.importKey("raw", raw, "AES-CBC", false, ["decrypt"])),
+    );
   }
   return keyCache.get(url);
 }
@@ -164,9 +167,7 @@ async function fetchTrack({ init: initUrl, segments }, label, { transmux = false
       raw[i] = await fetchSegment(segments[i]);
       transfer.bytes += raw[i].byteLength;
       drain();
-      const sizeSoFar = transfer.expected
-        ? `${formatSize(transfer.bytes)} of ≈ ${formatSize(transfer.expected)}`
-        : formatSize(transfer.bytes);
+      const sizeSoFar = transfer.expected ? `${formatSize(transfer.bytes)} of ≈ ${formatSize(transfer.expected)}` : formatSize(transfer.bytes);
       setProgress(++done, segments.length, `${done} of ${segments.length} parts, ${sizeSoFar}`);
       status(`Downloading ${label}…`);
     }
@@ -187,7 +188,15 @@ async function hlsTrack(mediaUrl, label, role = null) {
 
 // Untyped blobs let Chrome guess from the name, and macOS maps .ts to a
 // text type, so Chrome renames the file to .txt. Always set a video type.
-const MIME_BY_EXT = { ts: "video/mp2t", mp4: "video/mp4", m4a: "audio/x-m4a", webm: "video/webm", mov: "video/quicktime", mkv: "video/x-matroska", m4v: "video/mp4" };
+const MIME_BY_EXT = {
+  ts: "video/mp2t",
+  mp4: "video/mp4",
+  m4a: "audio/x-m4a",
+  webm: "video/webm",
+  mov: "video/quicktime",
+  mkv: "video/x-matroska",
+  m4v: "video/mp4",
+};
 
 // Resolves when the user clicks the main button (a dialog needs a click).
 function waitForClick(label) {
@@ -293,7 +302,10 @@ async function finish(video, audio) {
       if (audio) {
         const v = initTrack(video.init, "vide");
         const a = initTrack(audio.init, "soun");
-        tracks = [{ ...v, id: 1 }, { ...a, id: 2 }];
+        tracks = [
+          { ...v, id: 1 },
+          { ...a, id: 2 },
+        ];
         fragments = interleave(video.fragments, v.timescale, audio.fragments, a.timescale);
         fallback = () => [...mergeInit(v, a), ...fragments.map((f) => f.blob)];
       } else {
@@ -380,12 +392,14 @@ async function remoteSize(url) {
 async function mapLimited(items, limit, fn) {
   const out = new Array(items.length);
   let next = 0;
-  await Promise.all(Array.from({ length: limit }, async () => {
-    while (next < items.length) {
-      const i = next++;
-      out[i] = await fn(items[i]);
-    }
-  }));
+  await Promise.all(
+    Array.from({ length: limit }, async () => {
+      while (next < items.length) {
+        const i = next++;
+        out[i] = await fn(items[i]);
+      }
+    }),
+  );
   return out;
 }
 
@@ -398,9 +412,7 @@ const SAMPLE_SEGMENTS = 8;
 async function measureSegments(segments, initUrl = null) {
   if (!segments.length) return null;
   const exact = segments.length <= EXACT_MAX_SEGMENTS;
-  const picks = exact
-    ? segments
-    : Array.from({ length: SAMPLE_SEGMENTS }, (_, i) => segments[Math.round((i * (segments.length - 1)) / (SAMPLE_SEGMENTS - 1))]);
+  const picks = exact ? segments : Array.from({ length: SAMPLE_SEGMENTS }, (_, i) => segments[Math.round((i * (segments.length - 1)) / (SAMPLE_SEGMENTS - 1))]);
   const sizes = await mapLimited(picks, 6, (seg) => remoteSize(seg.url));
   if (sizes.some((n) => !n)) return null;
   const sampled = sizes.reduce((n, x) => n + x, 0);
@@ -442,7 +454,8 @@ function showChoices(choices) {
     const large = choice.estimate && choice.estimate.bytes >= LARGE_BYTES;
     $("size-note").hidden = !large;
     if (large) {
-      $("size-note").textContent = `Large video: ${choice.estimate.exact ? "" : "about "}${formatSize(choice.estimate.bytes)}. Keep this tab open until it's saved, and make sure you have at least that much free disk space.`;
+      $("size-note").textContent =
+        `Large video: ${choice.estimate.exact ? "" : "about "}${formatSize(choice.estimate.bytes)}. Keep this tab open until it's saved, and make sure you have at least that much free disk space.`;
     }
   };
   const select = (choice, button) => {
@@ -480,7 +493,11 @@ const quality = (height, bandwidth) => ({
 // Playlists are fetched once: for size estimates, then for the download.
 const playlists = new Map();
 function loadMedia(url) {
-  if (!playlists.has(url)) playlists.set(url, fetchOk(url).then((text) => parseMedia(text, url)));
+  if (!playlists.has(url))
+    playlists.set(
+      url,
+      fetchOk(url).then((text) => parseMedia(text, url)),
+    );
   return playlists.get(url);
 }
 
@@ -510,7 +527,11 @@ async function startHls() {
       measure: async () => {
         const video = await measureHls(v.url, v.averageBandwidth || v.bandwidth).catch(() => null);
         if (!v.audioUrl) return video;
-        if (!audioSizes.has(v.audioUrl)) audioSizes.set(v.audioUrl, measureHls(v.audioUrl, 0).catch(() => null));
+        if (!audioSizes.has(v.audioUrl))
+          audioSizes.set(
+            v.audioUrl,
+            measureHls(v.audioUrl, 0).catch(() => null),
+          );
         return addEstimates(video, await audioSizes.get(v.audioUrl));
       },
       start: async () => {

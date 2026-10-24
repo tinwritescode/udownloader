@@ -56,7 +56,10 @@ function box(type, payloads) {
   const size = 8 + payloads.reduce((n, p) => n + p.length, 0);
   const out = new Uint8Array(size);
   view(out).setUint32(0, size);
-  out.set([...type].map((c) => c.charCodeAt(0)), 4);
+  out.set(
+    [...type].map((c) => c.charCodeAt(0)),
+    4,
+  );
   let o = 8;
   for (const p of payloads) {
     out.set(p, o);
@@ -368,17 +371,20 @@ function buildMoov(tracks, tables) {
     movieDuration = Math.max(movieDuration, inMovie);
     const stbl = find(t.init, ["mdia", "minf", "stbl"], t.trak.body, t.trak.end);
     const stsd = slice(t.init, find(t.init, ["stsd"], stbl.body, stbl.end));
-    return box("trak", rewrite(t.init, t.trak.body, t.trak.end, (b) => {
-      if (b.type === "edts") return null;
-      if (b.type === "stbl") return sampleTable(stsd, table);
-      if (b.type === "tkhd") {
-        const copy = setDuration(t.init, b, [20, 28], inMovie);
-        view(copy).setUint32(b.body - b.start + (version(t.init, b) === 1 ? 20 : 12), t.id);
-        return copy;
-      }
-      if (b.type === "mdhd") return setDuration(t.init, b, [16, 24], total);
-      return undefined;
-    }));
+    return box(
+      "trak",
+      rewrite(t.init, t.trak.body, t.trak.end, (b) => {
+        if (b.type === "edts") return null;
+        if (b.type === "stbl") return sampleTable(stsd, table);
+        if (b.type === "tkhd") {
+          const copy = setDuration(t.init, b, [20, 28], inMovie);
+          view(copy).setUint32(b.body - b.start + (version(t.init, b) === 1 ? 20 : 12), t.id);
+          return copy;
+        }
+        if (b.type === "mdhd") return setDuration(t.init, b, [16, 24], total);
+        return undefined;
+      }),
+    );
   });
   const mvhd = setDuration(init, mvhdBox, [16, 24], movieDuration);
   setU32(mvhd, mvhd.length - 4, Math.max(...tracks.map((t) => t.id)) + 1);

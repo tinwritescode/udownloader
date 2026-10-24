@@ -3,16 +3,8 @@
   "name": "uDownloader",
   "version": "0.1.0",
   "description": "Detect and download page videos (direct files, HLS, DASH) locally. No external services.",
-  "permissions": [
-    "webRequest",
-    "declarativeNetRequest",
-    "downloads",
-    "storage",
-    "tabs"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "permissions": ["webRequest", "declarativeNetRequest", "downloads", "storage", "tabs"],
+  "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js",
     "type": "module"

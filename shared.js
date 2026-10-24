@@ -5,7 +5,12 @@ export async function send(type, payload = {}) {
 }
 
 export function safeFileName(title, ext) {
-  const base = (title || "video").replace(/[\\/:*?"<>|\u0000-\u001f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 120);
+  const base = (title || "video")
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: control characters are invalid in file names
+    .replace(/[\\/:*?"<>|\u0000-\u001f]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
   return `${base || "video"}.${ext}`;
 }
 

@@ -20,6 +20,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+/* biome-ignore lint/complexity/noImportantStyles: [hidden] must win over component display rules */
 [hidden] { display: none !important; }
 body {
   margin: 0;

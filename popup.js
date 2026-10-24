@@ -1,4 +1,4 @@
-import { send, formatBytes } from "./shared.js";
+import { formatBytes, send } from "./shared.js";
 
 const list = document.getElementById("list");
 
