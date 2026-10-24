@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Saving your video</title>
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="download.css" />
+  </head>
+  <body>
+    <main>
+      <h1 class="headline">Saving your video</h1>
+      <p class="subtitle"><span id="title"></span>, <span id="format"></span> from <span id="host"></span></p>
+      <div id="variants" class="segment" role="group" aria-label="Quality"></div>
+      <p id="size-note" class="size-note" hidden></p>
+      <section class="progress-card" id="progress-card" hidden>
+        <div class="progress-head">
+          <span class="pct" id="pct">0%</span>
+          <span class="detail" id="detail"></span>
+        </div>
+        <div class="track" id="progress" role="progressbar" aria-label="Download progress" aria-valuemin="0" aria-valuemax="100">
+          <div class="fill" id="progress-fill"></div>
+        </div>
+      </section>
+      <p id="status" role="status" aria-live="polite"></p>
+      <div class="actions">
+        <button id="start" class="btn-primary" hidden></button>
+        <button id="show" class="btn-primary" hidden>Show in folder</button>
+        <button id="close" class="btn-ghost">Close</button>
+      </div>
+    </main>
+    <script src="vendor/muxjs/mux.min.js"></script>
+    <script type="module" src="download.js"></script>
+  </body>
+</html>

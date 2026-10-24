@@ -1,0 +1,69 @@
+/* Hero Dark Gradient: black ground, zinc surfaces, one pink-to-amber
+   gradient reserved for the primary action and progress. Format badges:
+   HLS = gradient, DASH = purple, file = green. */
+:root {
+  --ground: #000000;
+  --surface: #18181b;
+  --raised: #27272a;
+  --border: #3f3f46;
+  --text: #ecedee;
+  --muted: #a1a1aa;
+  --from: #f31260;
+  --to: #f5a524;
+  --gradient: linear-gradient(45deg, var(--from), var(--to));
+  --dash-bg: #301050;
+  --dash-fg: #c9a9e9;
+  --file-bg: #095028;
+  --file-fg: #a2e9c1;
+  --danger: #f871a0;
+  --success: #45d483;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--text);
+  font: 14px/1.45 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+button {
+  font: inherit;
+  color: var(--text);
+  cursor: pointer;
+}
+button:focus-visible { outline: 2px solid var(--to); outline-offset: 2px; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.badge.hls { background: var(--gradient); color: #fff; }
+.badge.dash { background: var(--dash-bg); color: var(--dash-fg); }
+.badge.direct { background: var(--file-bg); color: var(--file-fg); }
+.btn-primary {
+  height: 48px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--gradient);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 10px 24px -8px rgb(243 18 96 / 0.6);
+}
+.btn-ghost {
+  height: 48px;
+  padding: 0 22px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  font-weight: 500;
+}
+.btn-primary:hover, .btn-ghost:hover { filter: brightness(1.1); }
