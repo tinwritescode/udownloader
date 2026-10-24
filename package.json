@@ -9,9 +9,13 @@
     "node": ">=22"
   },
   "scripts": {
-    "vendor": "node scripts/vendor.mjs"
+    "vendor": "node scripts/vendor.mjs",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "node --test"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.6.2",
     "@ffmpeg/core": "0.12.6",
     "@ffmpeg/ffmpeg": "0.12.10",
     "mux.js": "7.0.3"
