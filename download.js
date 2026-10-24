@@ -2,7 +2,7 @@ import { parseMpd } from "./dash.js";
 import { flatten, initTrack, initTracks, interleave, mergeInit, prepareFragment, trackDefaults } from "./fmp4.js";
 import { isMaster, parseMaster, parseMedia, segmentIv } from "./hls.js";
 import { toMp4 } from "./mux.js";
-import { extensionOf, safeFileName, send } from "./shared.js";
+import { extensionOf, isWebUrl, safeFileName, send } from "./shared.js";
 
 const CONCURRENCY = 6;
 // ffmpeg.wasm holds input and output in a 32-bit heap (about 2-4 GB), so
@@ -623,6 +623,10 @@ async function startBufferedDirect() {
 }
 
 const kind = params.get("kind");
+if (!isWebUrl(sourceUrl)) {
+  status("Only http and https video links can be downloaded.", "error");
+  throw new Error(`Refusing non-web URL: ${sourceUrl}`);
+}
 $("title").textContent = title;
 document.title = `Saving ${title}`;
 $("format").textContent = (FORMAT_NAMES[kind] ?? "video").toLowerCase().replace("hls", "HLS").replace("dash", "DASH");

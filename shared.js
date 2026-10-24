@@ -25,6 +25,15 @@ export function formatBytes(n) {
   return `${n.toFixed(i === 3 ? 2 : i ? 1 : 0)} ${units[i]}`;
 }
 
+// Only web URLs are fetched; file:, chrome:, data: and the like are refused.
+export function isWebUrl(url) {
+  try {
+    return ["http:", "https:"].includes(new URL(url).protocol);
+  } catch {
+    return false;
+  }
+}
+
 export function extensionOf(url, fallback = "mp4") {
   return new URL(url).pathname.match(/\.([a-z0-9]{2,4})$/i)?.[1].toLowerCase() ?? fallback;
 }

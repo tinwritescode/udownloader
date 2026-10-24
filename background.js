@@ -2,6 +2,8 @@
 // service worker can be killed at any time), and sets Referer/Origin headers
 // for extension-initiated fetches via declarativeNetRequest session rules.
 
+import { isWebUrl } from "./shared.js";
+
 const HLS_TYPES = ["application/vnd.apple.mpegurl", "application/x-mpegurl", "audio/mpegurl"];
 const DASH_TYPES = ["application/dash+xml"];
 const SEGMENT_EXT = /\.(ts|m4s|aac|vtt|webvtt|key)(\?|$)/i;
@@ -127,6 +129,7 @@ const handlers = {
   // size. That path can't carry a Referer (DNR skips chrome.downloads), so
   // probe first without one; a refusal means the page must fetch it instead.
   async downloadNative({ url, filename }) {
+    if (!isWebUrl(url)) throw new Error("Only http and https URLs can be downloaded");
     try {
       const res = await fetch(url, { credentials: "include", headers: { Range: "bytes=0-0" } });
       res.body?.cancel();
@@ -140,13 +143,14 @@ const handlers = {
     return readTab(tabId);
   },
   async useReferer({ referer }, sender) {
-    if (referer) await setHeaderRule(sender.tab.id, referer);
+    if (!sender.tab) throw new Error("useReferer must come from a tab");
+    if (isWebUrl(referer)) await setHeaderRule(sender.tab.id, referer);
     return true;
   },
 };
 
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
-  const handler = handlers[msg?.type];
+  const handler = sender.id === chrome.runtime.id ? handlers[msg?.type] : null;
   if (!handler) return false;
   handler(msg, sender).then(
     (result) => reply({ ok: true, result }),
