@@ -18,6 +18,7 @@
     "@biomejs/biome": "2.6.2",
     "@ffmpeg/core": "0.12.6",
     "@ffmpeg/ffmpeg": "0.12.10",
+    "linkedom": "0.18.14",
     "mux.js": "7.0.3"
   }
 }
